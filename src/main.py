@@ -20,6 +20,23 @@ def gossiper(state: State, port: int) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversocket.bind((socket.gethostname(), port))
 
+    serversocket.connect(state.get_random_ip())
+    data: str = serversocket.recv()
+
+    for line in data.splitlines():
+        values: list[str] = line.split(",")
+        ip_values: list[str] = values[0].split(":")
+
+        node_ip: str = ip_values[0]
+        node_port: int = int(ip_values[1])
+        time: int = int(values[1])
+        digit: int = int(values[2])
+
+        state.update_node(node_ip, node_port, time, digit)
+
+    # run the gossiper again in 3 seconds
+    threading.Timer(3, gossiper).start()
+
 
 def terminal_listener(state: State) -> None:
     pass
