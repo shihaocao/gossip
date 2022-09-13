@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 
 class State:
@@ -17,7 +17,7 @@ class State:
     def update_node(ip: str, port: int, time: int, digit: int):
         pass
 
-    def get_random_ip() -> str:
+    def get_random_ip() -> Tuple[str, int]:
         pass
 
     def get_state() -> List[str]:
