@@ -6,11 +6,12 @@ random.seed(123)
 
 class DataPoint:
     time: int
-    data: int
+    digit: int
     def __init__(self, time: int, digit: int):
         self.time = time
         self.digit = digit
-    
+
+
 
 class State:
 
@@ -38,7 +39,8 @@ class State:
         return random_ip, random_port
     
     def _get_node_as_str(self, ip: str, port: int) -> str:
-        pass
+        data_point = self.ip_map[ip][port]
+        return f"{ip}:{port},{data_point.time},{data_point.digit}"
 
     def get_state(self) -> List[str]:
         
