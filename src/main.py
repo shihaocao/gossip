@@ -1,22 +1,44 @@
+import sys
+import socket
 import threading
 
-
-def tcp_listener():
-    pass
+from state import State
 
 
-def gossiper():
-    pass
+def tcp_listener(state: State, port: int) -> None:
+    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serversocket.bind((socket.gethostname(), port))
+    serversocket.listen()
+
+    while True:
+        connection, client_address = serversocket.accept()
+        connection.sendall(state.get_state())
+        connection.close()
 
 
-def terminal_listener():
+def gossiper(state: State, port: int) -> None:
+    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serversocket.bind((socket.gethostname(), port))
+
+
+def terminal_listener(state: State) -> None:
     pass
 
 
 def main():
-    thread1 = threading.Thread(target=tcp_listener, args=())
-    thread2 = threading.Thread(target=gossiper, args=())
-    thread3 = threading.Thread(target=terminal_listener, args=())
+    args = sys.argv
+
+    if (len(args) != 1 or type(args[0]) != int):
+        print("Usage: python main.py PORT")
+        return
+
+    port: int = sys.argv[0]
+
+    state: State = state()
+
+    thread1 = threading.Thread(target=tcp_listener, args=(state, port))
+    thread2 = threading.Thread(target=gossiper, args=(state, port))
+    thread3 = threading.Thread(target=terminal_listener, args=(state))
 
     thread1.start()
     thread2.start()

@@ -1,5 +1,8 @@
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, Tuple
+
+import random
+random.seed(123)
 
 class DataPoint:
     time: int
@@ -28,8 +31,20 @@ class State:
         self.ip_map[ip][port] = DataPoint(time, digit)
         pass
 
-    def get_random_ip(self) -> str:
+    def get_random_ip(self) -> Tuple[str, int]:
+        random_ip = random.choice([self.ip_map.keys()])
+        random_port = random.choice([self.ip_map[random_ip]])
+
+        return random_ip, random_port
+    
+    def _get_node_as_str(self, ip: str, port: int) -> str:
         pass
 
-    def get_state() -> List[str]:
-        pass
+    def get_state(self) -> List[str]:
+        
+        return_list = []
+        for ip, port_map in self.ip_map.items():
+            for port in port_map.keys():
+                return_list.append(self._get_node_as_str(ip, port))
+        
+        return return_list
