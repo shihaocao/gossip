@@ -1,5 +1,6 @@
 from collections import defaultdict
 from typing import Dict, List, Tuple
+from unittest import TestCase
 
 import random
 import time
@@ -13,8 +14,21 @@ class DataPoint:
     def __init__(self, data_time: int, digit: int):
         self.data_time = data_time
         self.digit = digit
+        
+    def __eq__(self, other):
+        if not isinstance(other, DataPoint):
+            return NotImplemented
+        
+        return (
+            self.data_time == other.data_time
+            and self.digit == other.digit
+        )
 
+    def __str__(self):
+        return f"{self.data_time}:{self.digit}"
 
+    def __repr__(self) -> str:
+        return str(self)
 
 class State:
 
@@ -22,7 +36,7 @@ class State:
     lock: threading.Lock
 
     def __init__(self):
-        self.ip_map = defaultdict({})
+        self.ip_map = defaultdict(lambda: {})
         self.banned_set = set()
         self.lock = threading.Lock()
 
@@ -32,38 +46,36 @@ class State:
             # time is in the future, reject
             return
         
-        self.lock.acquire()
+        with self.lock:
         
-        if (ip, port) in self.banned_set:
-            # reject if banned
-            return
-                
-        if port in self.ip_map[ip]:
-            existing_data_point = self.ip_map[ip][port]
-            if data_time > existing_data_point.data_time:
-                # valid newer time, perform update
+            if (ip, port) in self.banned_set:
+                # reject if banned
+                return
+                    
+            if port in self.ip_map[ip]:
+                existing_data_point = self.ip_map[ip][port]
+                if data_time > existing_data_point.data_time:
+                    # valid newer time, perform update
+                    self.ip_map[ip][port] = DataPoint(data_time, digit)
+
+            else:
+                # data is not pre-existing so add to state
                 self.ip_map[ip][port] = DataPoint(data_time, digit)
 
-        else:
-            # data is not pre-existing so add to state
-            self.ip_map[ip][port] = DataPoint(data_time, digit)
+                port_data_point_pairs = self.ip_map[ip].items()
+                if len(port_data_point_pairs) > 3:
+                    # too many saved ports, eject the stalest
 
-            port_data_point_pairs = self.ip_map[ip].items()
-            if len(port_data_point_pairs) > 3:
-                # too many saved ports, eject the stalest
-
-                stalest_time = 1700000000
-                stalest_port = 0
-                
-                for port, data_point in port_data_point_pairs:
-                    if data_point.data_time < stalest_time:
-                        stalest_time = data_point.data_time
-                        stalest_port = port
-                
-                self.ip_map[ip].pop(stalest_port)
+                    stalest_time = 1700000000
+                    stalest_port = 0
+                    
+                    for port, data_point in port_data_point_pairs:
+                        if data_point.data_time < stalest_time:
+                            stalest_time = data_point.data_time
+                            stalest_port = port
+                    
+                    self.ip_map[ip].pop(stalest_port)
         
-        self.lock.release()
-
     def add_to_banned_set(self, ip: str, port: int) -> None:
         self.lock.acquire()
      
