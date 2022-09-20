@@ -43,8 +43,8 @@ class State:
         self.banned_set = set()
         self.my_ip    = ip
         self.my_port  = port
-        self.my_update_time = 0
-        self.my_value = 0
+        self.my_update_time = None
+        self.my_value = None
         self.lock = threading.Lock()
 
     @staticmethod
@@ -142,7 +142,8 @@ class State:
             for port in port_map.keys():
                 return_list.append(self._get_node_data_as_str(ip, port))
 
-        return_list.append(State._format_node_data(self.my_ip, self.my_port, self.my_update_time, self.my_value))
+        if self.my_value is not None:
+            return_list.append(State._format_node_data(self.my_ip, self.my_port, self.my_update_time, self.my_value))
 
         self.lock.release()
 
