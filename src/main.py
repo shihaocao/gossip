@@ -20,7 +20,6 @@ def tcp_listener(state: State, local_port: int) -> None:
 
 def gossip(state: State, local_port: int, ip: str) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serversocket.bind((socket.gethostname(), local_port))
 
     serversocket.connect(ip)
     data: str = serversocket.recv()
