@@ -3,7 +3,7 @@ from src.state import State, DataPoint
 import time
 
 def test_update_node():
-  test_state = State()
+  test_state = State('111', 222)
   
   now = int(time.time()) - 100
   test_state.update_node('123', 456, now, 1)
@@ -47,7 +47,7 @@ def test_update_node():
 
   
 def test_get_state():
-  test_state = State()
+  test_state = State('111', 222)
   
   now = int(time.time()) - 100
   test_state.update_node('123', 456, now, 1)
@@ -63,13 +63,26 @@ def test_get_state():
                    f'123:458,{now},3',
                    f'123.10:1,{now},4',
                    f'123.10:2,{now},5',
-                   f'123.10:3,{now},6'
+                   f'123.10:3,{now},6',
+                   f'111:222,0,0'
+                   ]
+
+  assert expected_list == result_list
+  test_state.update_self(now+1, 5)
+  result_list = test_state.get_state()
+  expected_list = [f'123:456,{now},1',
+                   f'123:457,{now},2',
+                   f'123:458,{now},3',
+                   f'123.10:1,{now},4',
+                   f'123.10:2,{now},5',
+                   f'123.10:3,{now},6',
+                   f'111:222,{now+1},5'
                    ]
 
   assert expected_list == result_list
 
 def test_get_random_ip():
-  test_state = State()
+  test_state = State('111', 222)
   
   now = int(time.time()) - 100
   test_state.update_node('123', 456, now, 1)
