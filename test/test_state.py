@@ -67,3 +67,19 @@ def test_get_state():
                    ]
 
   assert expected_list == result_list
+
+def test_get_random_ip():
+  test_state = State()
+  
+  now = int(time.time()) - 100
+  test_state.update_node('123', 456, now, 1)
+  test_state.update_node('123', 457, now, 2)
+  test_state.update_node('123', 458, now, 3)
+  test_state.update_node('123.10', 1, now, 4)
+  test_state.update_node('123.10', 2, now, 5)
+  test_state.update_node('123.10', 3, now, 6)
+  
+  ip, port = test_state.get_random_ip()
+  print(ip)
+  print(port)
+  

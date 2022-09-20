@@ -94,8 +94,8 @@ class State:
     def get_random_ip(self) -> Tuple[str, int]:
         self.lock.acquire()
                 
-        random_ip = random.choice([self.ip_map.keys()])
-        random_port = random.choice([self.ip_map[random_ip]])
+        random_ip = random.choice(list(self.ip_map.keys()))
+        random_port = random.choice(list(self.ip_map[random_ip]))
 
         self.lock.release()
 
