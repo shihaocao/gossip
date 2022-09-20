@@ -46,7 +46,7 @@ def gossiper(state: State, local_port: int) -> None:
     threading.Timer(3, gossiper, args=(state, local_port)).start()
 
 
-def terminal_listener(state: State, local_ip: str, local_port: int) -> None:
+def terminal_listener(state: State, local_port: int) -> None:
     while True:
         input_val: str = input(">> ")
         if input_val == "?":
@@ -54,8 +54,7 @@ def terminal_listener(state: State, local_ip: str, local_port: int) -> None:
                 print(state_value)
 
         elif len(input_val) == 1 and input_val.isdigit():
-            state.update_node(
-                local_ip, port, datetime.now().timestamp(), int(input_val))
+            state.update_self(datetime.now().timestamp(), int(input_val))
 
         elif input_val.startswith("+"):
             # TODO add validation
@@ -85,7 +84,7 @@ def main():
     thread1 = threading.Thread(target=tcp_listener, args=(state, local_port))
     thread2 = threading.Thread(target=gossiper, args=(state, local_port))
     thread3 = threading.Thread(
-        target=terminal_listener, args=(state, local_ip, local_port))
+        target=terminal_listener, args=(state, local_port))
 
     thread1.start()
     thread2.start()
