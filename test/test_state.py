@@ -64,7 +64,6 @@ def test_get_state():
                    f'123.10:1,{now},4',
                    f'123.10:2,{now},5',
                    f'123.10:3,{now},6',
-                   f'111:222,0,0'
                    ]
 
   assert expected_list == result_list
@@ -93,6 +92,6 @@ def test_get_random_ip():
   test_state.update_node('123.10', 3, now, 6)
   
   ip, port = test_state.get_random_ip()
-  print(ip)
-  print(port)
+  # print(ip)
+  # print(port)
   

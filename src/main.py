@@ -7,7 +7,7 @@ import threading
 import time
 
 from state import State
-
+from update_line import UpdateLine
 
 def tcp_listener(state: State, local_port: int) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,24 +28,22 @@ def gossip(state: State, target_ip: str, target_port: int) -> None:
     
     start = time.time()
     buffer: bytes = bytes()
+    MAX_BUFFER_SIZE = 65535
     while time.time() < start + 1:
         data: str = serversocket.recv(256)
-        # print(type(data))
         buffer += data
+        if len(buffer) > MAX_BUFFER_SIZE:
+            break
 
     buffer_as_str = buffer.decode('utf-8')
 
     for line in buffer_as_str.splitlines():
-        values: list[str] = line.split(",")
-        ip_values: list[str] = values[0].split(":")
-
-        node_ip: str = ip_values[0]
-        node_port: int = int(ip_values[1])
-        update_time: int = int(values[1])
-        digit: int = int(values[2])
-
-        state.update_node(node_ip, node_port, update_time, digit)
-
+        update_line = UpdateLine(line)
+        if update_line.valid:
+            state.update_node(update_line.ip,
+                              update_line.port,
+                              update_line.update_time,
+                              update_line.digit)
 
 def gossiper(state: State) -> None:
     return_tuple = state.get_random_ip()
