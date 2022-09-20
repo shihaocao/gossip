@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import List
-from curses.ascii import isdigit
 import sys
 import socket
 import threading
@@ -52,7 +51,7 @@ def terminal_listener(state: State, local_ip: str, local_port: int) -> None:
             for state_value in state.get_state():
                 print(state_value)
 
-        elif isdigit(input):
+        elif len(input) == 1 and input.isdigit():
             state.update_node(
                 local_ip, port, datetime.now().timestamp(), int(input))
 
