@@ -67,13 +67,13 @@ def terminal_listener(state: State, local_ip: str, local_port: int) -> None:
 def main():
     args = sys.argv
 
-    if (len(args) != 1 or type(args[0]) != int):
+    if (len(args) != 2 or not args[1].isdigit()):
         print("Usage: python main.py PORT")
         return
 
     port: int = sys.argv[0]
 
-    state: State = state()
+    state: State = State()
 
     thread1 = threading.Thread(target=tcp_listener, args=(state, port))
     thread2 = threading.Thread(target=gossiper, args=(state, port))
