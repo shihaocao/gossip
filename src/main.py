@@ -18,7 +18,7 @@ def tcp_listener(state: State, local_port: int) -> None:
         connection.close()
 
 
-def gossip(state: State, local_port: int, ip: str) -> None:
+def gossip(state: State, local_ip: str, local_port: int, ip: str) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversocket.bind((socket.gethostname(), local_port))
 
@@ -37,11 +37,13 @@ def gossip(state: State, local_port: int, ip: str) -> None:
         state.update_node(node_ip, node_port, time, digit)
 
 
-def gossiper(state: State, local_port: int) -> None:
-    gossip(state, local_port, state.get_random_ip())
+def gossiper(state: State, local_ip: str, local_port: int) -> None:
+    target_ip = state.get_random_ip()
+    if target_ip != None:
+        gossip(state, local_ip, local_port, target_ip)
 
     # run the gossiper again in 3 seconds
-    threading.Timer(3, gossiper).start()
+    threading.Timer(3, gossiper, args=(state, local_port)).start()
 
 
 def terminal_listener(state: State, local_ip: str, local_port: int) -> None:
@@ -71,13 +73,19 @@ def main():
         print("Usage: python main.py PORT")
         return
 
-    port: int = int(sys.argv[1])
+    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    local_port: int = int(sys.argv[1])
+    local_ip: str = socket.gethostname()
+
+    serversocket.close()
 
     state: State = State()
 
-    thread1 = threading.Thread(target=tcp_listener, args=(state, port))
-    thread2 = threading.Thread(target=gossiper, args=(state, port))
-    thread3 = threading.Thread(target=terminal_listener, args=(state))
+    thread1 = threading.Thread(target=tcp_listener, args=(state, local_port))
+    thread2 = threading.Thread(target=gossiper, args=(state, local_port))
+    thread3 = threading.Thread(
+        target=terminal_listener, args=(state, local_ip, local_port))
 
     thread1.start()
     thread2.start()
