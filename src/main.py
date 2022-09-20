@@ -1,8 +1,10 @@
 from datetime import datetime
+from symbol import return_stmt
 from typing import List
 import sys
 import socket
 import threading
+import time
 
 from state import State
 
@@ -14,7 +16,7 @@ def tcp_listener(state: State, local_port: int) -> None:
 
     while True:
         connection, client_address = serversocket.accept()
-        connection.sendall(state.get_state())
+        connection.sendall(state.encode_state_as_bytes())
         connection.close()
 
 
@@ -23,27 +25,36 @@ def gossip(state: State, target_ip: str, target_port: int) -> None:
     # serversocket.bind((socket.gethostbyname(socket.gethostname()), local_port))
 
     serversocket.connect((target_ip, target_port))
-    data: str = serversocket.recv()
+    
+    start = time.time()
+    buffer: bytes = bytes()
+    while time.time() < start + 1:
+        data: str = serversocket.recv(256)
+        # print(type(data))
+        buffer += data
 
-    for line in data.splitlines():
+    buffer_as_str = buffer.decode('utf-8')
+
+    for line in buffer_as_str.splitlines():
         values: list[str] = line.split(",")
         ip_values: list[str] = values[0].split(":")
 
         node_ip: str = ip_values[0]
         node_port: int = int(ip_values[1])
-        time: int = int(values[1])
+        update_time: int = int(values[1])
         digit: int = int(values[2])
 
-        state.update_node(node_ip, node_port, time, digit)
+        state.update_node(node_ip, node_port, update_time, digit)
 
 
 def gossiper(state: State) -> None:
-    target_ip, target_port = state.get_random_ip()
-    if target_ip != None:
+    return_tuple = state.get_random_ip()
+    if return_tuple:
+        target_ip, target_port = return_tuple
         gossip(state, target_ip, target_port)
 
     # run the gossiper again in 3 seconds
-    threading.Timer(3, gossiper, args=(state)).start()
+    threading.Timer(3, gossiper, args=(state,)).start()
 
 
 def terminal_listener(state: State, local_port: int) -> None:
@@ -82,7 +93,7 @@ def main():
     state: State = State(local_ip, local_port)
 
     thread1 = threading.Thread(target=tcp_listener, args=(state, local_port))
-    thread2 = threading.Thread(target=gossiper, args=(state))
+    thread2 = threading.Thread(target=gossiper, args=(state,))
     thread3 = threading.Thread(
         target=terminal_listener, args=(state, local_port))
 

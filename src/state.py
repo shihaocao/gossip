@@ -148,3 +148,8 @@ class State:
         self.lock.release()
 
         return return_list
+
+    def encode_state_as_bytes(self):
+        state_list = self.get_state()
+        state_str = '\n'.join(state_list)
+        return state_str.encode('utf-8')
