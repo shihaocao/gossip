@@ -54,7 +54,7 @@ def terminal_listener(state: State, local_port: int) -> None:
                 print(state_value)
 
         elif len(input_val) == 1 and input_val.isdigit():
-            state.update_self(datetime.now().timestamp(), int(input_val))
+            state.update_self(int(datetime.now().timestamp()), int(input_val))
 
         elif input_val.startswith("+"):
             # TODO add validation
@@ -74,7 +74,7 @@ def main():
 
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    local_ip: str = socket.gethostname()
+    local_ip: str = socket.gethostbyname(socket.gethostname())
     local_port: int = int(sys.argv[1])
 
     serversocket.close()
