@@ -18,11 +18,11 @@ def tcp_listener(state: State, local_port: int) -> None:
         connection.close()
 
 
-def gossip(state: State, local_port: int, ip: str) -> None:
+def gossip(state: State, target_ip: str, target_port: int) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serversocket.bind((socket.gethostname(), local_port))
+    # serversocket.bind((socket.gethostbyname(socket.gethostname()), local_port))
 
-    serversocket.connect(ip)
+    serversocket.connect((target_ip, target_port))
     data: str = serversocket.recv()
 
     for line in data.splitlines():
@@ -37,13 +37,13 @@ def gossip(state: State, local_port: int, ip: str) -> None:
         state.update_node(node_ip, node_port, time, digit)
 
 
-def gossiper(state: State, local_port: int) -> None:
-    target_ip = state.get_random_ip()
+def gossiper(state: State) -> None:
+    target_ip, target_port = state.get_random_ip()
     if target_ip != None:
-        gossip(state, local_port, target_ip)
+        gossip(state, target_ip, target_port)
 
     # run the gossiper again in 3 seconds
-    threading.Timer(3, gossiper, args=(state, local_port)).start()
+    threading.Timer(3, gossiper, args=(state)).start()
 
 
 def terminal_listener(state: State, local_port: int) -> None:
@@ -59,10 +59,10 @@ def terminal_listener(state: State, local_port: int) -> None:
         elif input_val.startswith("+"):
             # TODO add validation
             ip_and_port: List[str] = input_val[1:].split(':')
-            ip = ip_and_port[0]
-            port = int(ip_and_port[1])
+            target_ip = ip_and_port[0]
+            target_port = int(ip_and_port[1])
 
-            gossip(state, local_port, ip + ":" + str(port))
+            gossip(state, target_ip, target_port)
 
 
 def main():
@@ -82,7 +82,7 @@ def main():
     state: State = State(local_ip, local_port)
 
     thread1 = threading.Thread(target=tcp_listener, args=(state, local_port))
-    thread2 = threading.Thread(target=gossiper, args=(state, local_port))
+    thread2 = threading.Thread(target=gossiper, args=(state))
     thread3 = threading.Thread(
         target=terminal_listener, args=(state, local_port))
 
