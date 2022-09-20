@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import List
+from curses.ascii import isdigit
 import sys
 import socket
 import threading
@@ -5,9 +8,9 @@ import threading
 from state import State
 
 
-def tcp_listener(state: State, port: int) -> None:
+def tcp_listener(state: State, local_port: int) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serversocket.bind((socket.gethostname(), port))
+    serversocket.bind((socket.gethostname(), local_port))
     serversocket.listen()
 
     while True:
@@ -16,11 +19,11 @@ def tcp_listener(state: State, port: int) -> None:
         connection.close()
 
 
-def gossiper(state: State, port: int) -> None:
+def gossip(state: State, local_port: int, ip: str) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serversocket.bind((socket.gethostname(), port))
+    serversocket.bind((socket.gethostname(), local_port))
 
-    serversocket.connect(state.get_random_ip())
+    serversocket.connect(ip)
     data: str = serversocket.recv()
 
     for line in data.splitlines():
@@ -34,12 +37,32 @@ def gossiper(state: State, port: int) -> None:
 
         state.update_node(node_ip, node_port, time, digit)
 
+
+def gossiper(state: State, local_port: int) -> None:
+    gossip(state, local_port, state.get_random_ip())
+
     # run the gossiper again in 3 seconds
     threading.Timer(3, gossiper).start()
 
 
-def terminal_listener(state: State) -> None:
-    pass
+def terminal_listener(state: State, local_ip: str, local_port: int) -> None:
+    while True:
+        input: str = input()
+        if input == "?":
+            for state_value in state.get_state():
+                print(state_value)
+
+        elif isdigit(input):
+            state.update_node(
+                local_ip, port, datetime.now().timestamp(), int(input))
+
+        elif input.startswith("+"):
+            # TODO add validation
+            ip_and_port: List[str] = input[1:].split(':')
+            ip = ip_and_port[0]
+            port = int(ip_and_port[1])
+
+            gossip(state, local_port, ip + ":" + str(port))
 
 
 def main():
