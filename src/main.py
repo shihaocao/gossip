@@ -46,7 +46,7 @@ def gossiper(state: State, local_port: int) -> None:
 
 def terminal_listener(state: State, local_ip: str, local_port: int) -> None:
     while True:
-        input: str = input()
+        input: str = input(">> ")
         if input == "?":
             for state_value in state.get_state():
                 print(state_value)
@@ -71,7 +71,7 @@ def main():
         print("Usage: python main.py PORT")
         return
 
-    port: int = sys.argv[0]
+    port: int = int(sys.argv[1])
 
     state: State = State()
 
