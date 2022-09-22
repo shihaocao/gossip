@@ -1,12 +1,30 @@
+from cmath import atan
 from datetime import datetime
+import random
 import sys
 import socket
 import threading
 import time
 from typing import List
+from adversarial import get_random_attack
 
 from state import State
 from update_line import UpdateLine, IP, Port
+
+
+def hostile_tcp_listener(state: State, local_port: int) -> None:
+    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serversocket.bind((socket.gethostname(), local_port))
+    serversocket.listen()
+
+    while True:
+        connection, client_address = serversocket.accept()
+
+        attack = get_random_attack()
+
+        connection.sendall(
+            attack(state, client_address[0], client_address[1]).encode('utf-8'))
+        connection.close()
 
 
 def tcp_listener(state: State, local_port: int) -> None:
@@ -30,7 +48,7 @@ def gossip(state: State, target_ip: str, target_port: int, initial_gossip: bool)
     except:
         state.add_to_banned_set(target_ip, target_port)
         return
-    
+
     start = time.time()
     buffer: bytes = bytes()
     MAX_BUFFER_SIZE = 65535
