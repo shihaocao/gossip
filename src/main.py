@@ -21,9 +21,16 @@ def tcp_listener(state: State, local_port: int) -> None:
 
 
 def gossip(state: State, target_ip: str, target_port: int, initial_gossip: bool) -> None:
-    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serversocket.connect((target_ip, target_port))
+    if state.is_banned(target_ip, target_port):
+        return
 
+    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        serversocket.connect((target_ip, target_port))
+    except:
+        state.add_to_banned_set(target_ip, target_port)
+        return
+    
     start = time.time()
     buffer: bytes = bytes()
     MAX_BUFFER_SIZE = 65535
@@ -34,10 +41,10 @@ def gossip(state: State, target_ip: str, target_port: int, initial_gossip: bool)
             break
 
     buffer_as_str = buffer.decode('utf-8')
-
+    lines_to_parse = buffer_as_str.splitlines()[256:]
     updates_to_print: List[str] = []
 
-    for line in buffer_as_str.splitlines():
+    for line in lines_to_parse:
         update_line = UpdateLine(line)
         if update_line.valid:
             updated: bool = state.update_node(update_line.ip,
@@ -49,6 +56,8 @@ def gossip(state: State, target_ip: str, target_port: int, initial_gossip: bool)
 
             if updated and new_state != None:
                 updates_to_print.append(new_state)
+
+    serversocket.close()
 
     # print the necessary updates
     if len(updates_to_print) > 0:

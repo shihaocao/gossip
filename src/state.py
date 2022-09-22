@@ -69,7 +69,7 @@ class State:
 
         with self.lock:
 
-            if (ip, port) in self.banned_set:
+            if self.is_banned(ip, port):
                 # reject if banned
                 return False
 
@@ -99,6 +99,9 @@ class State:
                     self.ip_map[ip].pop(stalest_port)
 
                 return True
+
+    def is_banned(self, ip: str, port: int) -> bool:
+        return (ip, port) in self.banned_set
 
     def add_to_banned_set(self, ip: str, port: int) -> None:
         self.lock.acquire()
