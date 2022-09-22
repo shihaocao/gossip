@@ -1,4 +1,6 @@
-from src.adversarial import *
+from src.adversarial import random_data, negative_digits, long_response, change_their_digit, whitespace_in_state, bad_ip_port
+from src.state import State
+import time
 
 class TestFixture:
   def __init__(self):

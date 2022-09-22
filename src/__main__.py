@@ -5,10 +5,10 @@ import socket
 import threading
 import time
 from typing import List
-from adversarial import get_random_attack
+from .adversarial import get_random_attack
 
-from state import State
-from update_line import UpdateLine, IP, Port
+from .state import State
+from .update_line import UpdateLine, IP, Port
 
 
 TCP_TIMEOUT = 1
@@ -108,6 +108,10 @@ def terminal_listener(state: State, local_port: int) -> None:
         if input_val == "?":
             for state_value in state.get_state(printable=True):
                 print(state_value)
+            if len(state.banned_set) > 0:
+                print('Banned Set:')
+                for banned_ip, banned_port in state.banned_set:
+                    print(f'   {banned_ip}:{banned_port}')
 
         elif len(input_val) == 1 and input_val.isdigit():
             state.update_self(int(datetime.now().timestamp()), int(input_val))
@@ -136,7 +140,7 @@ def main():
 
     if (len(args) == 2 and args[1].isdigit()):
         adversarial = False
-    elif (len(args) == 3 and args[1].isdigit() and args[2] == "--adversarial"):
+    elif (len(args) == 3 and args[1].isdigit() and (args[2] == "--adversarial" or args[2] == '-a')):
         adversarial = True
     else:
         print("Usage: python main.py PORT")
