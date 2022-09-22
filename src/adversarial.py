@@ -18,8 +18,10 @@ def random_data(state: State, ip: str, port: int) -> str:
 def negative_digits(state: State, ip: str, port: int) -> str:
     current_state: List[str] = state.get_state()
     for idx in range(len(current_state)):
-        current_state[idx] = current_state[idx][-1:].append(
-            str(random.randint(-9, -1)))
+        current_state[idx] = current_state[idx][-1:] + \
+            str(random.randint(-9, -1))
+
+    return '\n'.join(current_state)
 
 
 def long_response(state: State, ip: str, port: int) -> str:
