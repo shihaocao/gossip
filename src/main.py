@@ -12,6 +12,8 @@ from state import State
 from update_line import UpdateLine, IP, Port
 
 
+TCP_TIMEOUT = 1
+
 def hostile_tcp_listener(state: State, local_port: int) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversocket.bind((socket.gethostname(), local_port))
@@ -44,8 +46,10 @@ def gossip(state: State, target_ip: str, target_port: int, initial_gossip: bool)
 
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
+        serversocket.settimeout(TCP_TIMEOUT)
         serversocket.connect((target_ip, target_port))
     except:
+        print(f"Failed to connect to {target_ip}:{target_port}")
         state.add_to_banned_set(target_ip, target_port)
         return
 
@@ -53,6 +57,7 @@ def gossip(state: State, target_ip: str, target_port: int, initial_gossip: bool)
     buffer: bytes = bytes()
     MAX_BUFFER_SIZE = 65535
     while time.time() < start + 1:
+        serversocket.settimeout(TCP_TIMEOUT)
         data: str = serversocket.recv(256)
         buffer += data
         if len(buffer) > MAX_BUFFER_SIZE:
