@@ -1,7 +1,7 @@
 import random
 import string
 from typing import List
-from state import State
+from src.state import State
 import time
 
 def get_random_attack():
