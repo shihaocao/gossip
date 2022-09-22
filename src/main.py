@@ -13,6 +13,7 @@ from update_line import UpdateLine, IP, Port
 
 TCP_TIMEOUT = 1
 
+
 def adversarial_tcp_listener(state: State, local_port: int) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversocket.bind((socket.gethostname(), local_port))
@@ -116,14 +117,14 @@ def terminal_listener(state: State, local_port: int) -> None:
 
             # make sure ip and port are present
             if len(ip_and_port) != 2:
-                return
+                continue
 
             target_ip: IP = IP(ip_and_port[0])
             target_port: Port = Port(ip_and_port[1])
 
             # make sure ip and port are valid
             if target_ip.ip == None or target_port.port == None:
-                return
+                continue
 
             gossip(state, target_ip.ip, target_port.port, initial_gossip=True)
 
@@ -135,7 +136,7 @@ def main():
 
     if (len(args) == 2 and args[1].isdigit()):
         adversarial = False
-    elif (len(args == 3) and args[1].isdigit() and args[2] == "--adversarial"):
+    elif (len(args) == 3 and args[1].isdigit() and args[2] == "--adversarial"):
         adversarial = True
     else:
         print("Usage: python main.py PORT")
