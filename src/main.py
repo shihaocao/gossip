@@ -1,14 +1,11 @@
 from datetime import datetime
-from symbol import return_stmt
-from typing import List
 import sys
 import socket
 import threading
 import time
-from src.update_line import IP, Port
 
 from state import State
-from update_line import UpdateLine
+from update_line import UpdateLine, IP, Port
 
 
 def tcp_listener(state: State, local_port: int) -> None:
