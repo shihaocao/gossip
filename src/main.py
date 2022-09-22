@@ -3,6 +3,7 @@ import sys
 import socket
 import threading
 import time
+from typing import List
 
 from state import State
 from update_line import UpdateLine, IP, Port
