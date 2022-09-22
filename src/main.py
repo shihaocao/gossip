@@ -1,6 +1,5 @@
 from cmath import atan
 from datetime import datetime
-import random
 import sys
 import socket
 import threading
@@ -14,7 +13,7 @@ from update_line import UpdateLine, IP, Port
 
 TCP_TIMEOUT = 1
 
-def hostile_tcp_listener(state: State, local_port: int) -> None:
+def adversarial_tcp_listener(state: State, local_port: int) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversocket.bind((socket.gethostname(), local_port))
     serversocket.listen()
@@ -132,7 +131,13 @@ def terminal_listener(state: State, local_port: int) -> None:
 def main():
     args = sys.argv
 
-    if (len(args) != 2 or not args[1].isdigit()):
+    adversarial: bool
+
+    if (len(args) == 2 and args[1].isdigit()):
+        adversarial = False
+    elif (len(args == 3) and args[1].isdigit() and args[2] == "--adversarial"):
+        adversarial = True
+    else:
         print("Usage: python main.py PORT")
         return
 
@@ -145,7 +150,14 @@ def main():
 
     state: State = State(local_ip, local_port)
 
-    thread1 = threading.Thread(target=tcp_listener, args=(state, local_port))
+    thread1: threading.Thread
+    if adversarial:
+        thread1 = threading.Thread(
+            target=adversarial_tcp_listener, args=(state, local_port))
+    else:
+        thread1 = threading.Thread(
+            target=tcp_listener, args=(state, local_port))
+
     thread2 = threading.Thread(target=gossiper, args=(state,))
     thread3 = threading.Thread(
         target=terminal_listener, args=(state, local_port))
