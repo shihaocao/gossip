@@ -41,7 +41,7 @@ def gossip(state: State, target_ip: str, target_port: int, initial_gossip: bool)
             break
 
     buffer_as_str = buffer.decode('utf-8')
-    lines_to_parse = buffer_as_str.splitlines()[256:]
+    lines_to_parse = buffer_as_str.splitlines()[:256]
     updates_to_print: List[str] = []
 
     for line in lines_to_parse:
