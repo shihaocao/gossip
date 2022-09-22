@@ -41,8 +41,8 @@ class State:
     def __init__(self, ip: str, port: int):
         self.ip_map = defaultdict(lambda: {})
         self.banned_set = set()
-        self.my_ip    = ip
-        self.my_port  = port
+        self.my_ip = ip
+        self.my_port = port
         self.my_update_time = None
         self.my_value = None
         self.lock = threading.Lock()
@@ -57,26 +57,28 @@ class State:
         self.my_value = digit
         self.lock.release()
 
-    def update_node(self, ip: str, port: int, data_time: int, digit: int):
+    # returns true if there was a change
+    def update_node(self, ip: str, port: int, data_time: int, digit: int) -> bool:
 
         if ip == self.my_ip and port == self.my_port:
-            return
+            return False
 
         if data_time > State._get_now():
             # time is in the future, reject
-            return
+            return False
 
         with self.lock:
 
             if (ip, port) in self.banned_set:
                 # reject if banned
-                return
+                return False
 
             if port in self.ip_map[ip]:
                 existing_data_point = self.ip_map[ip][port]
                 if data_time > existing_data_point.data_time:
                     # valid newer time, perform update
                     self.ip_map[ip][port] = DataPoint(data_time, digit)
+                    return True
 
             else:
                 # data is not pre-existing so add to state
@@ -95,6 +97,8 @@ class State:
                             stalest_port = port
 
                     self.ip_map[ip].pop(stalest_port)
+
+                return True
 
     def add_to_banned_set(self, ip: str, port: int) -> None:
         self.lock.acquire()
@@ -126,30 +130,48 @@ class State:
         return random_ip, random_port
 
     @staticmethod
-    def _format_node_data(ip, port, time, digit):
-        return f"{ip}:{port},{time},{digit}"
+    def _format_node_data(ip: str, port: int, time: int, digit: int, printable=False) -> str:
+        if printable:
+            return f"{ip}:{port} --> {digit}"
+        else:
+            return f"{ip}:{port},{time},{digit}"
 
-    def _get_node_data_as_str(self, ip: str, port: int) -> str:
+    def _get_node_data_as_str(self, ip: str, port: int, printable=False) -> str:
         data_point = self.ip_map[ip][port]
-        return State._format_node_data(ip, port, data_point.data_time, data_point.digit)
 
-    def get_state(self) -> List[str]:
+        if data_point == None:
+            return None
+
+        return State._format_node_data(ip, port, data_point.data_time, data_point.digit, printable)
+
+    def get_state(self, printable=False) -> List[str]:
 
         self.lock.acquire()
 
         return_list = []
         for ip, port_map in self.ip_map.items():
             for port in port_map.keys():
-                return_list.append(self._get_node_data_as_str(ip, port))
+                return_list.append(
+                    self._get_node_data_as_str(ip, port, printable))
 
         if self.my_value is not None:
-            return_list.append(State._format_node_data(self.my_ip, self.my_port, self.my_update_time, self.my_value))
+            return_list.append(State._format_node_data(
+                self.my_ip, self.my_port, self.my_update_time, self.my_value, printable))
 
         self.lock.release()
 
         return return_list
 
+    def get_node_state(self, ip: str, port: int, printable: bool) -> str:
+        self.lock.acquire()
+
+        res: str = self._get_node_data_as_str(ip, port, printable)
+
+        self.lock.release()
+
+        return res
+
     def encode_state_as_bytes(self):
-        state_list = self.get_state()
+        state_list = self.get_state(printable=False)
         state_str = '\n'.join(state_list)
         return state_str.encode('utf-8')

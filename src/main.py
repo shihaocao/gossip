@@ -20,7 +20,7 @@ def tcp_listener(state: State, local_port: int) -> None:
         connection.close()
 
 
-def gossip(state: State, target_ip: str, target_port: int) -> None:
+def gossip(state: State, target_ip: str, target_port: int, initial_gossip: bool) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversocket.connect((target_ip, target_port))
 
@@ -35,20 +35,36 @@ def gossip(state: State, target_ip: str, target_port: int) -> None:
 
     buffer_as_str = buffer.decode('utf-8')
 
+    updates_to_print: List[str] = []
+
     for line in buffer_as_str.splitlines():
         update_line = UpdateLine(line)
         if update_line.valid:
-            state.update_node(update_line.ip,
-                              update_line.port,
-                              update_line.update_time,
-                              update_line.digit)
+            updated: bool = state.update_node(update_line.ip,
+                                              update_line.port,
+                                              update_line.update_time,
+                                              update_line.digit)
+            new_state = state.get_node_state(
+                update_line.ip, update_line.port, printable=True)
+
+            if updated and new_state != None:
+                updates_to_print.append(new_state)
+
+    # print the necessary updates
+    if len(updates_to_print) > 0:
+        if not initial_gossip:
+            print()
+        for update in updates_to_print:
+            print(update)
+        if not initial_gossip:
+            print(">> ", end="", flush=True)
 
 
 def gossiper(state: State) -> None:
     return_tuple = state.get_random_ip()
     if return_tuple:
         target_ip, target_port = return_tuple
-        gossip(state, target_ip, target_port)
+        gossip(state, target_ip, target_port, initial_gossip=False)
 
     # run the gossiper again in 3 seconds
     threading.Timer(3, gossiper, args=(state,)).start()
@@ -58,7 +74,7 @@ def terminal_listener(state: State, local_port: int) -> None:
     while True:
         input_val: str = input(">> ")
         if input_val == "?":
-            for state_value in state.get_state():
+            for state_value in state.get_state(printable=True):
                 print(state_value)
 
         elif len(input_val) == 1 and input_val.isdigit():
@@ -78,7 +94,7 @@ def terminal_listener(state: State, local_port: int) -> None:
             if target_ip.ip == None or target_port.port == None:
                 return
 
-            gossip(state, target_ip.ip, target_port.port)
+            gossip(state, target_ip.ip, target_port.port, initial_gossip=True)
 
 
 def main():
