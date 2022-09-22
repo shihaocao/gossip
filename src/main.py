@@ -5,9 +5,11 @@ import sys
 import socket
 import threading
 import time
+from src.update_line import IP, Port
 
 from state import State
 from update_line import UpdateLine
+
 
 def tcp_listener(state: State, local_port: int) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -22,10 +24,8 @@ def tcp_listener(state: State, local_port: int) -> None:
 
 def gossip(state: State, target_ip: str, target_port: int) -> None:
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # serversocket.bind((socket.gethostbyname(socket.gethostname()), local_port))
-
     serversocket.connect((target_ip, target_port))
-    
+
     start = time.time()
     buffer: bytes = bytes()
     MAX_BUFFER_SIZE = 65535
@@ -44,6 +44,7 @@ def gossip(state: State, target_ip: str, target_port: int) -> None:
                               update_line.port,
                               update_line.update_time,
                               update_line.digit)
+
 
 def gossiper(state: State) -> None:
     return_tuple = state.get_random_ip()
@@ -66,12 +67,20 @@ def terminal_listener(state: State, local_port: int) -> None:
             state.update_self(int(datetime.now().timestamp()), int(input_val))
 
         elif input_val.startswith("+"):
-            # TODO add validation
             ip_and_port: List[str] = input_val[1:].split(':')
-            target_ip = ip_and_port[0]
-            target_port = int(ip_and_port[1])
 
-            gossip(state, target_ip, target_port)
+            # make sure ip and port are present
+            if len(ip_and_port) != 2:
+                return
+
+            target_ip: IP = IP(ip_and_port[0])
+            target_port: Port = Port(ip_and_port[1])
+
+            # make sure ip and port are valid
+            if target_ip.ip == None or target_port.port == None:
+                return
+
+            gossip(state, target_ip.ip, target_port.port)
 
 
 def main():
