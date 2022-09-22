@@ -1,4 +1,6 @@
 import random
+import string
+from typing import List
 from state import State
 
 
@@ -9,15 +11,18 @@ def get_random_attack():
 
 
 def random_data(state: State, ip: str, port: int) -> str:
-    pass
+    letters = string.ascii_letters
+    return ''.join(random.choice(letters) for i in range(100))
 
 
 def negative_digits(state: State, ip: str, port: int) -> str:
-    pass
+    current_state: List[str] = state.get_state()
+    for element in current_state:
+        element[len(element) - 1] = random.randint(-9, -1)
 
 
 def long_response(state: State, ip: str, port: int) -> str:
-    pass
+    return '\n'.join('\n'.join(state.get_state(printable=False)) for i in range(100000))
 
 
 def change_their_digit(state: State, ip: str, port: int) -> str:
