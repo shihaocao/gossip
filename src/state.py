@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 from unittest import TestCase
 
 import random
@@ -37,6 +37,12 @@ class State:
 
     ip_map: Dict[str, Dict[int, DataPoint]]
     lock: threading.Lock
+    banned_set: Set[Tuple[str, int]]
+
+    my_ip: str
+    my_port: int
+    my_update_time: int
+    my_value: int
 
     def __init__(self, ip: str, port: int):
         self.ip_map = defaultdict(lambda: {})
@@ -140,6 +146,10 @@ class State:
             return f"{ip}:{port},{time},{digit}"
 
     def _get_node_data_as_str(self, ip: str, port: int, printable=False) -> str:
+
+        if ip == self.my_ip and port == self.my_port:
+            return State._format_node_data(ip, port, self.my_update_time, self.my_value, printable)
+
         data_point = self.ip_map[ip][port]
 
         if data_point == None:
