@@ -16,3 +16,5 @@ Run the unit tests as follows:
 ```
 pytest test
 ```
+
+Note: You must be using python3 to run the project.
