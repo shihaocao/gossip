@@ -5,10 +5,10 @@ import socket
 import threading
 import time
 from typing import List
-from .adversarial import get_random_attack
+from adversarial import get_random_attack
 
-from .state import State
-from .update_line import UpdateLine, IP, Port
+from state import State
+from update_line import UpdateLine, IP, Port
 
 
 TCP_TIMEOUT = 1
