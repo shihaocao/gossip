@@ -2,7 +2,7 @@ from src.adversarial import random_data, negative_digits, long_response, change_
 from src.state import State
 import time
 
-class TestFixture:
+class TFixture:
   def __init__(self):
     self.state = State('111', 222)
 
@@ -16,7 +16,7 @@ class TestFixture:
 
 
 def test_attacks():
-  tf = TestFixture()
+  tf = TFixture()
   print(random_data(tf.state, '1.1.1.1', 3000))
   print(negative_digits(tf.state, '1.1.1.1', 3000))
   print(long_response(tf.state, '1.1.1.1', 3000)[:1000])
