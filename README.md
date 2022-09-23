@@ -1,5 +1,5 @@
 # gossip
-## Shihao Cao (sfc72) and Jack Farley (jlf329)
+Shihao Cao (sfc72) and Jack Farley (jlf329)
 A repository for implementing a gossip protocol example to run on multiple hosts
 
 ## Running:
