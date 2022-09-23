@@ -8,7 +8,7 @@ import time
 def get_random_attack():
     attacks = [random_data, negative_digits, long_response,
                change_their_digit, whitespace_in_state, bad_ip_port]
-    return attacks[random.randint(0, len(attacks))]
+    return attacks[random.randint(0, len(attacks) - 1)]
 
 
 def random_data(state: State, ip: str, port: int) -> str:
