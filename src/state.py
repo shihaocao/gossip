@@ -150,6 +150,9 @@ class State:
         if ip == self.my_ip and port == self.my_port:
             return State._format_node_data(ip, port, self.my_update_time, self.my_value, printable)
 
+        if ip not in self.ip_map or port not in self.ip_map[ip]:
+            return None
+
         data_point = self.ip_map[ip][port]
 
         if data_point == None:
