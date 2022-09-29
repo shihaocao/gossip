@@ -36,6 +36,8 @@ def tcp_listener(state: State, local_port: int) -> None:
 
     while True:
         connection, client_address = serversocket.accept()
+        ip, port = client_address
+        print(f"Accepted connection from: {ip}:{port}")
         connection.sendall(state.encode_state_as_bytes())
         connection.close()
 
@@ -74,11 +76,13 @@ def gossip(state: State, target_ip: str, target_port: int, initial_gossip: bool)
                                               update_line.port,
                                               update_line.update_time,
                                               update_line.digit)
-            new_state = state.get_node_state(
-                update_line.ip, update_line.port, printable=True)
+            
+            if updated:
+                new_state = state.get_node_state(
+                    update_line.ip, update_line.port, printable=True)
 
-            if updated and new_state != None:
-                updates_to_print.append(new_state)
+                if new_state != None:
+                    updates_to_print.append(new_state)
 
     serversocket.close()
 
