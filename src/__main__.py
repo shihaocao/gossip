@@ -37,7 +37,7 @@ def tcp_listener(state: State, local_port: int) -> None:
     while True:
         connection, client_address = serversocket.accept()
         ip, port = client_address
-        print(f"Accepted connection from: {ip}:{port}")
+        # print(f"Accepted connection from: {ip}:{port}")
         connection.sendall(state.encode_state_as_bytes())
         connection.close()
 
